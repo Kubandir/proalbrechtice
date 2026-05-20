@@ -1,0 +1,433 @@
+/* ===========================================================================
+   Members ("Lidé hnutí") — v3.
+   Wider canvas, breathing room between cards, less monospace chrome.
+   Hover → panel becomes a poster-sized portrait of that person.
+   Click → locks; the same panel splits into portrait (left) + bio (right).
+   Slow, deliberate easings throughout.
+   =========================================================================== */
+.members{
+  padding-block:var(--section-y);
+  background:var(--bg);
+  position:relative;
+}
+.members::before{
+  /* very faint herringbone of warm hairlines, gives the section a 'paper' feel */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in oklch,var(--green-lt),transparent 70%), transparent 70%);
+  opacity:.7;
+}
+.members > *{position:relative}
+
+.members-inner{
+  width:min(100% - 2 * var(--gutter), 102rem);
+  margin-inline:auto;
+}
+
+.members-head{
+  display:grid;grid-template-columns:1fr;gap:1.2rem;align-items:end;
+  margin-bottom:clamp(2rem,5vw,3.25rem);
+  max-width:96rem;
+}
+@media (min-width:880px){.members-head{grid-template-columns:1.7fr 1fr;gap:3rem}}
+
+.members-eyebrow{
+  display:inline-block;font-family:"Inter Tight",sans-serif;font-weight:500;
+  font-size:clamp(.88rem,.85rem+.15vw,1rem);letter-spacing:0;
+  color:var(--green-dk);font-style:italic;margin-bottom:.75rem;
+}
+
+.members h2{
+  font-family:"Inter Tight",sans-serif;font-weight:700;
+  font-size:var(--fs-h2-sm);letter-spacing:-.03em;line-height:1;margin:0;
+  text-wrap:balance;color:var(--ink);
+}
+.members h2 .quiet{font-weight:300;color:var(--ink-2);display:block}
+.members-head p{
+  margin:0;font-size:clamp(1rem,.94rem+.3vw,1.18rem);color:var(--ink);
+  max-width:34rem;line-height:1.6;
+}
+.members-head p em{font-style:italic;color:var(--ink-2);font-weight:400}
+
+/* ----- outer container — no hard frame, just the panel below has weight ---- */
+.member-strip{
+  position:relative;
+}
+
+/* ----- strip row (7 cards, separated, breathing) ------------------------- */
+.strip-row{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:clamp(.6rem,1.4vw,1.4rem);
+  padding-bottom:clamp(.9rem,1.6vw,1.4rem);
+  position:relative;z-index:2;
+}
+
+
+/* ----- card -------------------------------------------------------------- */
+.member{
+  appearance:none;background:transparent;border:0;cursor:pointer;font-family:inherit;
+  padding:clamp(1rem,1.6vw,1.4rem) clamp(.5rem,1vw,.9rem) clamp(.9rem,1.4vw,1.2rem);
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:.75rem;
+  position:relative;min-width:0;
+  border-radius:6px;
+  transition:
+    background .55s var(--ease-merc),
+    transform .55s var(--ease-merc),
+    color .35s var(--ease);
+}
+.member::after{
+  /* subtle underline that grows on active — replaces the rigid grid lines */
+  content:"";position:absolute;left:50%;bottom:.2rem;height:2px;width:0;
+  background:var(--green-dk);transform:translateX(-50%);border-radius:2px;
+  transition:width .6s var(--ease-merc);
+}
+.member:hover::after{width:1.8rem}
+.member.is-active::after{width:2.6rem}
+
+@media (hover:hover){
+  .member:not(.is-active):hover{background:color-mix(in oklch,var(--bg-2),transparent 35%)}
+  .member:not(.is-active):hover .seal{transform:translateY(-3px)}
+}
+
+/* ----- the seal: circular head-and-shoulders portrait -------------------- */
+.member .seal{
+  position:relative;flex-shrink:0;
+  width:clamp(4rem,2.6rem+3.4vw,6.2rem);aspect-ratio:1/1;border-radius:50%;
+  overflow:hidden;background:var(--bg-3);
+  box-shadow:
+    0 0 0 2px var(--bg) inset,
+    0 0 0 1px color-mix(in oklch,var(--ink),transparent 82%);
+  transition:
+    box-shadow .7s var(--ease-merc),
+    transform .7s var(--ease-merc);
+}
+.member .seal img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1;
+  filter:grayscale(.25) contrast(1.04) saturate(.85);
+  transition:filter .8s var(--ease);
+}
+.member .seal .initials{
+  position:absolute;inset:0;z-index:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-3);font-family:"Inter Tight",sans-serif;font-weight:600;
+  font-size:1.1rem;letter-spacing:-.01em;line-height:1;
+}
+
+.member .nm{
+  font-family:"Inter Tight",sans-serif;font-weight:600;
+  font-size:clamp(.92rem,.88rem+.2vw,1.05rem);
+  color:var(--ink);letter-spacing:-.012em;line-height:1.2;
+  text-wrap:balance;max-width:100%;
+}
+
+.member .rl{
+  font-family:"Inter Tight",sans-serif;font-style:italic;font-weight:400;
+  font-size:clamp(.78rem,.74rem+.16vw,.9rem);
+  color:var(--ink-2);line-height:1.35;
+  text-wrap:balance;max-width:100%;
+}
+
+/* ----- ACTIVE card ------------------------------------------------------- */
+.member.is-active{
+  background:color-mix(in oklch,var(--green-lt),transparent 35%);
+  cursor:default;
+}
+.member.is-active .seal{
+  box-shadow:
+    0 0 0 2px var(--bg) inset,
+    0 0 0 2.5px var(--green-dk);
+  transform:translateY(-2px);
+}
+.member.is-active .seal img{filter:grayscale(0) contrast(1.04) saturate(.95)}
+
+/* ----- shared panel ------------------------------------------------------ */
+.strip-panel{
+  position:relative;z-index:1;
+  background:var(--bg-2);
+  border-radius:6px;
+  overflow:hidden;
+  max-height:0;
+  transition:
+    max-height .9s var(--ease-merc),
+    padding .55s var(--ease),
+    opacity .55s var(--ease);
+  opacity:0;
+}
+.member-strip[data-open="true"] .strip-panel{
+  max-height:48rem;
+  opacity:1;
+}
+
+/* the panel always has two zones: portrait (left) + content (right).
+   In 'preview' (hover) mode, content fades down and portrait stretches.   */
+.strip-panel{
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-areas:"portrait" "content";
+  gap:0;
+}
+@media (min-width:880px){
+  .strip-panel{
+    grid-template-columns:minmax(20rem,38%) 1fr;
+    grid-template-areas:"portrait content";
+  }
+}
+
+/* ----- the portrait zone ------------------------------------------------- */
+.p-portrait{
+  grid-area:portrait;
+  position:relative;overflow:hidden;
+  background:var(--ink);
+  aspect-ratio:4/5;
+  min-height:0;
+}
+@media (min-width:880px){
+  .p-portrait{aspect-ratio:auto;min-height:26rem}
+}
+.p-portrait img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 30%;
+  filter:grayscale(.15) contrast(1.05) saturate(.85);
+  transition:opacity .7s var(--ease),transform 1.6s var(--ease-merc),filter .7s var(--ease);
+  transform:scale(1.02);
+}
+.p-portrait::after{
+  /* bottom scrim for the overlaid name */
+  content:"";position:absolute;inset:auto 0 0 0;height:55%;pointer-events:none;
+  background:linear-gradient(to top, oklch(14% .012 250 / .85), oklch(14% .012 250 / 0));
+}
+.p-portrait-name{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  padding:clamp(1rem,2.4vw,1.8rem) clamp(1.2rem,3vw,2rem);
+  color:var(--bg);display:flex;flex-direction:column;gap:.25rem;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .55s .15s var(--ease),transform .55s .15s var(--ease-merc);
+}
+.member-strip[data-open="true"] .p-portrait-name{opacity:1;transform:none}
+.p-portrait-name .p-name-big{
+  font-family:"Inter Tight",sans-serif;font-weight:700;
+  font-size:clamp(1.5rem,1rem+2vw,2.4rem);letter-spacing:-.025em;line-height:1.02;
+  text-wrap:balance;
+}
+.p-portrait-name .p-name-role{
+  font-family:"Inter Tight",sans-serif;font-style:italic;font-weight:400;
+  font-size:clamp(.88rem,.8rem+.3vw,1rem);
+  color:color-mix(in oklch,var(--bg),transparent 25%);
+  margin-top:.15rem;
+}
+
+/* Always show the full medailonek — both hover and click reveal bio + meta.
+   Only the close button differs (locked vs preview).                       */
+.strip-panel .p-content{opacity:1;transform:none;pointer-events:auto}
+
+/* ----- the content zone -------------------------------------------------- */
+.p-content{
+  grid-area:content;
+  padding:clamp(1.5rem,3vw,2.4rem) clamp(1.5rem,3vw,2.6rem) clamp(3.5rem,4vw,3.5rem);
+  display:flex;flex-direction:column;gap:.9rem;min-width:0;
+  transition:opacity .55s var(--ease),transform .55s var(--ease-merc);
+}
+
+.p-content h3{
+  font-family:"Inter Tight",sans-serif;font-weight:700;
+  font-size:clamp(1.45rem,1.1rem+1.3vw,2.2rem);
+  letter-spacing:-.025em;line-height:1.05;margin:0;color:var(--ink);
+  text-wrap:balance;
+}
+.p-content .p-role{
+  font-family:"Inter Tight",sans-serif;font-style:italic;font-weight:400;
+  font-size:clamp(.95rem,.88rem+.3vw,1.08rem);
+  color:var(--ink-2);margin-top:-.25rem;
+}
+
+.p-body{min-width:0;display:flex;flex-direction:column;gap:.7rem}
+.p-body p{
+  margin:0;
+  font-size:clamp(1rem,.95rem+.3vw,1.15rem);
+  color:var(--ink);line-height:1.62;text-wrap:pretty;max-width:54ch;
+}
+.p-body p:first-child{
+  font-weight:500;font-size:clamp(1.05rem,.98rem+.32vw,1.22rem);
+  letter-spacing:-.005em;color:var(--ink);
+}
+
+.p-meta{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.4rem}
+.p-meta span{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.3rem .65rem;background:var(--bg);
+  border:1px solid color-mix(in oklch,var(--ink),transparent 86%);border-radius:99px;
+  font-family:"Inter Tight",sans-serif;font-size:.82rem;letter-spacing:0;
+  color:var(--ink);font-weight:500;
+}
+.p-meta span::before{
+  content:"";width:.36rem;height:.36rem;border-radius:50%;background:var(--green-dk);
+}
+
+/* ----- close button: bottom-right of the PANEL, never overlaps a card ---- */
+.p-close{
+  position:absolute;
+  bottom:clamp(.9rem,1.6vw,1.3rem);right:clamp(.9rem,1.6vw,1.3rem);
+  background:var(--bg);border:1px solid color-mix(in oklch,var(--ink),transparent 80%);
+  cursor:pointer;color:var(--ink-2);font-family:"Inter Tight",sans-serif;
+  font-size:.85rem;font-weight:500;letter-spacing:-.005em;
+  padding:.45rem .9rem .45rem .7rem;border-radius:99px;
+  display:inline-flex;align-items:center;gap:.4rem;
+  opacity:0;pointer-events:none;
+  transition:
+    opacity .4s var(--ease),
+    color .3s,background .3s,border-color .3s,transform .35s var(--ease-merc);
+  z-index:5;
+}
+.p-close::before{
+  content:"";width:.55rem;height:.55rem;background:
+    linear-gradient(45deg,transparent 45%,currentColor 45% 55%,transparent 55%),
+    linear-gradient(-45deg,transparent 45%,currentColor 45% 55%,transparent 55%);
+}
+.p-close:hover{color:var(--ink);border-color:var(--ink);transform:translateY(-1px)}
+.member-strip[data-mode="locked"] .p-close{
+  opacity:1;pointer-events:auto;
+  transition:opacity .45s .3s var(--ease);
+}
+
+/* ----- reduced motion ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  .strip-panel,.p-portrait img,.p-portrait-name,.p-content,
+  .member,.member *,.p-close{transition:none !important}
+  .p-portrait img{transform:none}
+}
+/* ----- MOBILE: editorial vertical feed — magazine-cover-per-candidate ---
+   Each card: full-bleed portrait at the top with name + role overlaid,
+   tiny mono position number top-right (marginalia), bio + meta below in
+   an editorial single-column. No active highlight — pure scroll feed.    */
+@media (max-width:880px){
+  .strip-row{
+    display:flex;flex-direction:column;
+    gap:clamp(2rem,5vw,3rem);
+    padding-bottom:0;
+  }
+  /* hide the shared panel — every card is self-contained */
+  .strip-panel{display:none !important}
+
+  .member{
+    flex-direction:column;align-items:stretch;
+    text-align:left;
+    gap:0;
+    padding:0;
+    background:var(--bg);
+    border-radius:10px;
+    overflow:hidden;
+    cursor:default;
+    border:1px solid color-mix(in oklch,var(--ink),transparent 88%);
+    box-shadow:
+      0 1px 2px color-mix(in oklch,var(--ink),transparent 92%),
+      0 8px 24px -16px color-mix(in oklch,var(--ink),transparent 80%);
+    /* scroll-driven reveal */
+    opacity:0;transform:translateY(28px);
+    transition:opacity 1s var(--ease),transform 1s var(--ease-merc);
+  }
+  .member.in-view{opacity:1;transform:none}
+  .member::after{display:none}
+  /* hard reset: never show desktop active styles on mobile */
+  .member,
+  .member:hover,
+  .member.is-active{background:var(--bg) !important;cursor:default}
+  .member.is-active .seal{box-shadow:none !important}
+
+  /* ----- portrait fills the top of the card ------------------------------ */
+  .member .seal{
+    position:relative;
+    width:100%;aspect-ratio:4/5;border-radius:0;
+    background:var(--ink);
+    box-shadow:none;
+    overflow:hidden;
+    transition:none;
+  }
+  .member .seal img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    object-position:center 28%;
+    filter:grayscale(.18) contrast(1.05) saturate(.88);
+    transform:scale(1.02);
+    transition:transform 2s var(--ease-merc);
+  }
+  .member.in-view .seal img{transform:scale(1)}
+  /* hide initials fallback when image loads (kept under img anyway) */
+  .member .seal .initials{font-size:2.4rem;color:color-mix(in oklch,var(--bg),transparent 65%)}
+
+  /* (no separate scrim — the label itself is a frosted dark plate) */
+  .member .seal::after{display:none}
+
+  /* ----- overlay: name + role on a blurred dark plate --------------------- */
+  .m-label{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;
+    padding:clamp(1rem,4vw,1.4rem) clamp(1.2rem,4.5vw,1.6rem) clamp(1.1rem,4vw,1.5rem);
+    display:flex;flex-direction:column;gap:.2rem;
+    color:var(--bg);
+    background:oklch(14% .012 250 / .72);
+    backdrop-filter:blur(16px) saturate(140%);
+    -webkit-backdrop-filter:blur(16px) saturate(140%);
+    border-top:1px solid color-mix(in oklch,var(--bg),transparent 78%);
+  }
+  /* fallback for browsers without backdrop-filter — solid dark plate */
+  @supports not (backdrop-filter: blur(1px)){
+    .m-label{background:oklch(14% .012 250 / .92)}
+  }
+  .m-label .nm{
+    font-family:"Inter Tight",sans-serif;font-weight:700;
+    font-size:clamp(1.45rem,1.1rem+2.4vw,2rem);
+    letter-spacing:-.025em;line-height:1.02;
+    color:var(--bg);text-wrap:balance;
+  }
+  .m-label .rl{
+    font-family:"Inter Tight",sans-serif;font-style:italic;font-weight:400;
+    font-size:clamp(.92rem,.84rem+.4vw,1.05rem);
+    color:color-mix(in oklch,var(--bg),transparent 22%);
+    margin-top:.05rem;line-height:1.35;
+  }
+
+  /* ----- position number top-right (editorial marginalia) ----------------- */
+  .m-pos{
+    position:absolute;top:clamp(.9rem,3vw,1.25rem);right:clamp(1rem,3.5vw,1.35rem);z-index:2;
+    font-family:"JetBrains Mono",monospace;font-weight:500;
+    font-size:.72rem;letter-spacing:.18em;
+    color:color-mix(in oklch,var(--bg),transparent 30%);
+    padding:.32rem .55rem .3rem;
+    border:1px solid color-mix(in oklch,var(--bg),transparent 65%);
+    border-radius:2px;
+    backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  }
+  .m-pos::before{content:"č. "}
+
+  /* ----- bio block: editorial single column under the portrait ----------- */
+  .m-bio{
+    display:flex;flex-direction:column;gap:.75rem;
+    padding:clamp(1.25rem,4.5vw,1.75rem) clamp(1.25rem,4.5vw,1.75rem) clamp(1.5rem,5vw,2rem);
+    background:var(--bg);
+  }
+  .m-bio p{
+    margin:0;font-size:clamp(.98rem,.92rem+.35vw,1.08rem);
+    color:var(--ink);line-height:1.62;text-wrap:pretty;
+  }
+  .m-bio p:first-child{
+    font-weight:500;font-size:clamp(1.05rem,.98rem+.45vw,1.18rem);
+    letter-spacing:-.005em;
+    /* a small editorial flourish: thin green rule before the lead */
+    padding-left:.85rem;border-left:2px solid var(--green-dk);
+  }
+  .m-bio .m-meta{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.45rem}
+  .m-bio .m-meta span{
+    display:inline-flex;align-items:center;gap:.35rem;
+    padding:.28rem .6rem;background:var(--bg-2);
+    border:1px solid color-mix(in oklch,var(--ink),transparent 86%);border-radius:99px;
+    font-family:"Inter Tight",sans-serif;font-size:.78rem;
+    color:var(--ink);font-weight:500;
+  }
+  .m-bio .m-meta span::before{
+    content:"";width:.34rem;height:.34rem;border-radius:50%;background:var(--green-dk);
+  }
+}
+
+/* DESKTOP only — keep the carousel-style row layout */
+@media (min-width:881px){
+  .m-bio{display:none}
+}
